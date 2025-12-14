@@ -1,7 +1,24 @@
 import streamlit as st
 import torch
 import torch.nn as nn
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModel
+
+# Handle transformers import with better error handling
+try:
+    from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModel
+except ImportError as e:
+    st.error(f"Error importing transformers: {e}")
+    st.error("""
+    **Transformers library import failed.**
+    
+    This might be due to:
+    1. Incomplete installation - try redeploying
+    2. Python 3.13 compatibility issue
+    3. Missing dependencies
+    
+    Please check the Streamlit Cloud logs for more details.
+    """)
+    st.stop()
+
 from safetensors.torch import load_file
 import json
 import os
