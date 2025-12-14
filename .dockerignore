@@ -1,0 +1,72 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb_checkpoints
+
+# Models and data (too large for Docker, should be mounted or downloaded)
+xlm-roberta-intent-classifier-final/
+slot_filling_model/
+slot_filling_model_crf/
+slot_filling_model_plaintext/
+data/
+*.jsonl
+*.arrow
+*.pth
+*.pt
+*.bin
+*.safetensors
+*.model
+checkpoint-*/
+results_*/
+tokenized_dataset/
+tokenized_ner_dataset/
+ner_dataset_plain/
+splits/
+train/
+test/
+validation/
+
+# Visualizations
+visualizations/
+*.png
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.docx
+*.pages
+*.pdf
+SETUP_GITHUB.md
+
+# Logs
+*.log
+logs/
+

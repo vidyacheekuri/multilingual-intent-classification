@@ -64,6 +64,7 @@ splits/
 *.json
 !package.json
 !tsconfig.json
+!railway.json
 !id2*.json
 !label2*.json
 !slot2*.json
