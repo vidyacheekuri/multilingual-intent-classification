@@ -354,10 +354,26 @@ def load_models():
     # Try to get from Streamlit secrets if available
     try:
         if hasattr(st, 'secrets') and 'models' in st.secrets:
-            intent_hf_repo = st.secrets.models.get('intent_hf_repo', intent_hf_repo)
-            slot_hf_repo = st.secrets.models.get('slot_hf_repo', slot_hf_repo)
-    except:
+            intent_hf_repo_secret = st.secrets.models.get('intent_hf_repo', None)
+            slot_hf_repo_secret = st.secrets.models.get('slot_hf_repo', None)
+            # Ensure they are strings if they exist
+            if intent_hf_repo_secret is not None:
+                intent_hf_repo = str(intent_hf_repo_secret) if intent_hf_repo_secret else None
+            if slot_hf_repo_secret is not None:
+                slot_hf_repo = str(slot_hf_repo_secret) if slot_hf_repo_secret else None
+    except Exception as e:
+        # Silently fail if secrets are not available
         pass
+    
+    # Ensure repo IDs are strings or None
+    if intent_hf_repo is not None:
+        intent_hf_repo = str(intent_hf_repo).strip()
+        if not intent_hf_repo:
+            intent_hf_repo = None
+    if slot_hf_repo is not None:
+        slot_hf_repo = str(slot_hf_repo).strip()
+        if not slot_hf_repo:
+            slot_hf_repo = None
     
     # Initialize variables
     intent_tokenizer = None
@@ -369,8 +385,8 @@ def load_models():
     
     try:
         # Determine intent model path (local or Hugging Face Hub)
-        if intent_hf_repo:
-            intent_model_dir = intent_hf_repo
+        if intent_hf_repo and isinstance(intent_hf_repo, str):
+            intent_model_dir = str(intent_hf_repo).strip()
             use_local_files = False
         else:
             intent_model_dir = os.path.join(current_dir, 'xlm-roberta-intent-classifier-final')
@@ -442,8 +458,8 @@ def load_models():
         intent_model.eval()
         
         # Determine slot model path (local or Hugging Face Hub)
-        if slot_hf_repo:
-            slot_model_dir = slot_hf_repo
+        if slot_hf_repo and isinstance(slot_hf_repo, str):
+            slot_model_dir = str(slot_hf_repo).strip()
             use_local_files_slot = False
         else:
             slot_model_dir = os.path.join(current_dir, 'slot_filling_model_crf', 'final_model')
