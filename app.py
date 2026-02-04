@@ -1,24 +1,7 @@
 import streamlit as st
 import torch
 import torch.nn as nn
-
-# Handle transformers import with better error handling
-try:
-    from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModel
-except ImportError as e:
-    st.error(f"Error importing transformers: {e}")
-    st.error("""
-    **Transformers library import failed.**
-    
-    This might be due to:
-    1. Incomplete installation - try redeploying
-    2. Python 3.13 compatibility issue
-    3. Missing dependencies
-    
-    Please check the Streamlit Cloud logs for more details.
-    """)
-    st.stop()
-
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModel
 from safetensors.torch import load_file
 import json
 import os
@@ -346,35 +329,6 @@ def load_models():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    # Check for Hugging Face Hub model IDs in Streamlit secrets or environment variables
-    # You can set these in Streamlit Cloud secrets: https://docs.streamlit.io/streamlit-cloud/get-started/deploy-an-app/connect-to-data-sources/secrets-management
-    intent_hf_repo = os.getenv('INTENT_MODEL_HF_REPO', None)
-    slot_hf_repo = os.getenv('SLOT_MODEL_HF_REPO', None)
-    
-    # Try to get from Streamlit secrets if available
-    try:
-        if hasattr(st, 'secrets') and 'models' in st.secrets:
-            intent_hf_repo_secret = st.secrets.models.get('intent_hf_repo', None)
-            slot_hf_repo_secret = st.secrets.models.get('slot_hf_repo', None)
-            # Ensure they are strings if they exist
-            if intent_hf_repo_secret is not None:
-                intent_hf_repo = str(intent_hf_repo_secret) if intent_hf_repo_secret else None
-            if slot_hf_repo_secret is not None:
-                slot_hf_repo = str(slot_hf_repo_secret) if slot_hf_repo_secret else None
-    except Exception as e:
-        # Silently fail if secrets are not available
-        pass
-    
-    # Ensure repo IDs are strings or None
-    if intent_hf_repo is not None:
-        intent_hf_repo = str(intent_hf_repo).strip()
-        if not intent_hf_repo:
-            intent_hf_repo = None
-    if slot_hf_repo is not None:
-        slot_hf_repo = str(slot_hf_repo).strip()
-        if not slot_hf_repo:
-            slot_hf_repo = None
-    
     # Initialize variables
     intent_tokenizer = None
     intent_model = None
@@ -384,127 +338,26 @@ def load_models():
     id2slot = None
     
     try:
-        # Determine intent model path (local or Hugging Face Hub)
-        if intent_hf_repo and isinstance(intent_hf_repo, str):
-            intent_model_dir = str(intent_hf_repo).strip()
-            use_local_files = False
-        else:
-            intent_model_dir = os.path.join(current_dir, 'xlm-roberta-intent-classifier-final')
-            use_local_files = True
-        
-        # Check if using local files and they exist
-        if use_local_files and not os.path.exists(intent_model_dir):
-            st.error(f"Intent model directory not found: {intent_model_dir}")
-            st.info("""
-            **Models not found!**
-            
-            **Option 1: Use Hugging Face Hub (Recommended for Streamlit Cloud)**
-            - Upload your models to Hugging Face Hub
-            - Set environment variables or Streamlit secrets:
-              - `INTENT_MODEL_HF_REPO`: Your Hugging Face repo ID (e.g., 'username/xlm-roberta-intent-classifier')
-              - `SLOT_MODEL_HF_REPO`: Your slot model repo ID
-            
-            **Option 2: Use Local Files**
-            - Ensure model files are in the repository
-            - For Streamlit Cloud, models must be < 1GB total
-            
-            See STREAMLIT_CLOUD_DEPLOY.md for detailed instructions.
-            """)
-            st.stop()
-        
-        # Load intent model
-        if use_local_files:
-            intent_tokenizer = AutoTokenizer.from_pretrained(intent_model_dir, local_files_only=True)
-            intent_model = AutoModelForSequenceClassification.from_pretrained(
-                intent_model_dir, 
-                local_files_only=True,
-                dtype=torch.float16 if device.type == 'cuda' else torch.float32
-            ).to(device)
-            
-            # Load intent mappings from local files
-            intent2id_path = os.path.join(intent_model_dir, 'intent2id.json')
-            id2intent_path = os.path.join(intent_model_dir, 'id2intent.json')
-            
-            if not os.path.exists(intent2id_path) or not os.path.exists(id2intent_path):
-                st.error(f"Intent mapping files not found in {intent_model_dir}")
-                st.stop()
-            
-            with open(intent2id_path, 'r') as f:
-                intent2id = json.load(f)
-            with open(id2intent_path, 'r') as f:
-                id2intent = json.load(f)
-        else:
-            # Load from Hugging Face Hub
-            intent_tokenizer = AutoTokenizer.from_pretrained(intent_model_dir)
-            intent_model = AutoModelForSequenceClassification.from_pretrained(
-                intent_model_dir,
-                dtype=torch.float16 if device.type == 'cuda' else torch.float32
-            ).to(device)
-            
-            # Try to load mappings from Hub (they should be in the repo)
-            try:
-                from huggingface_hub import hf_hub_download
-                intent2id_path = hf_hub_download(repo_id=intent_model_dir, filename='intent2id.json')
-                id2intent_path = hf_hub_download(repo_id=intent_model_dir, filename='id2intent.json')
-                
-                with open(intent2id_path, 'r') as f:
-                    intent2id = json.load(f)
-                with open(id2intent_path, 'r') as f:
-                    id2intent = json.load(f)
-            except Exception as e:
-                st.error(f"Could not load intent mappings from Hugging Face Hub: {str(e)}")
-                st.stop()
-        
+        intent_model_dir = os.path.join(current_dir, 'xlm-roberta-intent-classifier-final')
+        intent_tokenizer = AutoTokenizer.from_pretrained(intent_model_dir)
+        intent_model = AutoModelForSequenceClassification.from_pretrained(
+            intent_model_dir, dtype=torch.float16
+        ).to(device)
         intent_model.eval()
         
-        # Determine slot model path (local or Hugging Face Hub)
-        if slot_hf_repo and isinstance(slot_hf_repo, str):
-            slot_model_dir = str(slot_hf_repo).strip()
-            use_local_files_slot = False
-        else:
-            slot_model_dir = os.path.join(current_dir, 'slot_filling_model_crf', 'final_model')
-            use_local_files_slot = True
+        with open(os.path.join(current_dir, 'xlm-roberta-intent-classifier-final', 'intent2id.json'), 'r') as f:
+            intent2id = json.load(f)
+        with open(os.path.join(current_dir, 'xlm-roberta-intent-classifier-final', 'id2intent.json'), 'r') as f:
+            id2intent = json.load(f)
         
-        # Check if using local files and they exist
-        if use_local_files_slot and not os.path.exists(slot_model_dir):
-            st.error(f"Slot model directory not found: {slot_model_dir}")
-            st.stop()
+        slot_model_dir = os.path.join(current_dir, 'slot_filling_model_crf', 'final_model')
+        slot_tokenizer = AutoTokenizer.from_pretrained(slot_model_dir)
         
-        # Load slot tokenizer
-        if use_local_files_slot:
-            slot_tokenizer = AutoTokenizer.from_pretrained(slot_model_dir, local_files_only=True)
-            
-            # Load slot mappings from local files
-            id2label_path = os.path.join(slot_model_dir, 'id2label.json')
-            label2id_path = os.path.join(slot_model_dir, 'label2id.json')
-            
-            if not os.path.exists(id2label_path) or not os.path.exists(label2id_path):
-                st.error(f"Slot mapping files not found in {slot_model_dir}")
-                st.stop()
-            
-            with open(id2label_path, 'r') as f:
-                id2slot = json.load(f)
-            with open(label2id_path, 'r') as f:
-                slot2id = json.load(f)
-        else:
-            # Load from Hugging Face Hub
-            slot_tokenizer = AutoTokenizer.from_pretrained(slot_model_dir)
-            
-            # Try to load mappings from Hub
-            try:
-                from huggingface_hub import hf_hub_download
-                id2label_path = hf_hub_download(repo_id=slot_model_dir, filename='id2label.json')
-                label2id_path = hf_hub_download(repo_id=slot_model_dir, filename='label2id.json')
-                
-                with open(id2label_path, 'r') as f:
-                    id2slot = json.load(f)
-                with open(label2id_path, 'r') as f:
-                    slot2id = json.load(f)
-            except Exception as e:
-                st.error(f"Could not load slot mappings from Hugging Face Hub: {str(e)}")
-                st.stop()
+        with open(os.path.join(slot_model_dir, 'id2label.json'), 'r') as f:
+            id2slot = json.load(f)
+        with open(os.path.join(slot_model_dir, 'label2id.json'), 'r') as f:
+            slot2id = json.load(f)
 
-        # Create slot model
         slot_model = XLMRobertaWithCRF(
             model_name='xlm-roberta-base',
             num_labels=len(slot2id),
@@ -512,35 +365,12 @@ def load_models():
             label2id=slot2id
         ).to(device)
 
-        # Load model weights
-        if use_local_files_slot:
-            model_safetensors_path = os.path.join(slot_model_dir, 'model.safetensors')
-            if not os.path.exists(model_safetensors_path):
-                st.error(f"Slot model weights not found: {model_safetensors_path}")
-                st.stop()
-            model_state = load_file(model_safetensors_path)
-        else:
-            # Load from Hugging Face Hub
-            try:
-                from huggingface_hub import hf_hub_download
-                model_safetensors_path = hf_hub_download(repo_id=slot_model_dir, filename='model.safetensors')
-                model_state = load_file(model_safetensors_path)
-            except Exception as e:
-                st.error(f"Could not load slot model weights from Hugging Face Hub: {str(e)}")
-                st.stop()
-        
+        model_state = load_file(os.path.join(slot_model_dir, 'model.safetensors'))
         slot_model.load_state_dict(model_state)
         slot_model.eval()
             
     except Exception as e:
         st.error(f"Error loading models: {str(e)}")
-        st.info("""
-        **Troubleshooting:**
-        - Ensure model files are present in the repository or accessible via Hugging Face Hub
-        - Check that all required files (config.json, model files, tokenizer files) exist
-        - For Streamlit Cloud, upload models to Hugging Face Hub and set environment variables
-        - See STREAMLIT_CLOUD_DEPLOY.md for detailed instructions
-        """)
         st.stop()
     
     return {
