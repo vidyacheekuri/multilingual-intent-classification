@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModel
 from safetensors.torch import load_file
+from huggingface_hub import snapshot_download
 import json
 import os
 
@@ -323,12 +324,41 @@ with st.sidebar:
 def _set_example(example_value):
     st.session_state.utterance = example_value
 
+def _get_secret_or_env(section, key, env_var):
+    """
+    Helper to read a value from Streamlit secrets (section/key) or an env var.
+    Returns None if not found.
+    """
+    # Try Streamlit secrets first
+    try:
+        if section in st.secrets and key in st.secrets[section]:
+            return st.secrets[section][key]
+    except Exception:
+        # st.secrets may not be configured locally
+        pass
+
+    # Fallback to environment variable
+    return os.getenv(env_var)
+
+
 @st.cache_resource
 def load_models():
-    # Get the current directory (where app.py is located)
+    """
+    Load models either from local directories (for local dev)
+    or from Hugging Face Hub (for Streamlit Cloud / remote).
+
+    Priority:
+    1. If HF repo IDs are provided via secrets or env vars, load from Hub
+    2. Else, if local model directories exist, load from disk
+    3. Otherwise, show a clear error with deployment instructions
+    """
     current_dir = os.path.dirname(os.path.abspath(__file__))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
+
+    # Read HF repo IDs from Streamlit secrets or env vars
+    intent_hf_repo = _get_secret_or_env("models", "intent_hf_repo", "INTENT_MODEL_HF_REPO")
+    slot_hf_repo = _get_secret_or_env("models", "slot_hf_repo", "SLOT_MODEL_HF_REPO")
+
     # Initialize variables
     intent_tokenizer = None
     intent_model = None
@@ -336,51 +366,111 @@ def load_models():
     slot_tokenizer = None
     slot_model = None
     id2slot = None
-    
+
     try:
-        intent_model_dir = os.path.join(current_dir, 'xlm-roberta-intent-classifier-final')
-        intent_tokenizer = AutoTokenizer.from_pretrained(intent_model_dir)
-        intent_model = AutoModelForSequenceClassification.from_pretrained(
-            intent_model_dir, dtype=torch.float16
-        ).to(device)
-        intent_model.eval()
-        
-        with open(os.path.join(current_dir, 'xlm-roberta-intent-classifier-final', 'intent2id.json'), 'r') as f:
-            intent2id = json.load(f)
-        with open(os.path.join(current_dir, 'xlm-roberta-intent-classifier-final', 'id2intent.json'), 'r') as f:
-            id2intent = json.load(f)
-        
-        slot_model_dir = os.path.join(current_dir, 'slot_filling_model_crf', 'final_model')
-        slot_tokenizer = AutoTokenizer.from_pretrained(slot_model_dir)
-        
-        with open(os.path.join(slot_model_dir, 'id2label.json'), 'r') as f:
-            id2slot = json.load(f)
-        with open(os.path.join(slot_model_dir, 'label2id.json'), 'r') as f:
-            slot2id = json.load(f)
+        # Case 1: Load from Hugging Face Hub if repo IDs are configured
+        if intent_hf_repo and slot_hf_repo:
+            st.info("Loading models from Hugging Face Hub (Streamlit Cloud configuration). This may take a minute on first load.")
 
-        slot_model = XLMRobertaWithCRF(
-            model_name='xlm-roberta-base',
-            num_labels=len(slot2id),
-            id2label=id2slot,
-            label2id=slot2id
-        ).to(device)
+            # Download full snapshots so we can also read metadata JSON files
+            intent_repo_dir = snapshot_download(repo_id=intent_hf_repo)
+            slot_repo_dir = snapshot_download(repo_id=slot_hf_repo)
 
-        model_state = load_file(os.path.join(slot_model_dir, 'model.safetensors'))
-        slot_model.load_state_dict(model_state)
-        slot_model.eval()
-            
+            # Intent model + tokenizer
+            intent_tokenizer = AutoTokenizer.from_pretrained(intent_repo_dir)
+            intent_model = AutoModelForSequenceClassification.from_pretrained(
+                intent_repo_dir,
+                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+            ).to(device)
+            intent_model.eval()
+
+            # Load intent label mappings
+            with open(os.path.join(intent_repo_dir, "id2intent.json"), "r") as f:
+                id2intent = json.load(f)
+
+            # Slot tokenizer + CRF model
+            slot_tokenizer = AutoTokenizer.from_pretrained(slot_repo_dir)
+
+            with open(os.path.join(slot_repo_dir, "id2label.json"), "r") as f:
+                id2slot = json.load(f)
+            with open(os.path.join(slot_repo_dir, "label2id.json"), "r") as f:
+                slot2id = json.load(f)
+
+            slot_model = XLMRobertaWithCRF(
+                model_name="xlm-roberta-base",
+                num_labels=len(slot2id),
+                id2label=id2slot,
+                label2id=slot2id,
+            ).to(device)
+
+            model_state = load_file(os.path.join(slot_repo_dir, "model.safetensors"))
+            slot_model.load_state_dict(model_state)
+            slot_model.eval()
+
+        else:
+            # Case 2: Local development - load from local model directories
+            intent_model_dir = os.path.join(current_dir, "xlm-roberta-intent-classifier-final")
+            slot_model_dir = os.path.join(current_dir, "slot_filling_model_crf", "final_model")
+
+            if not os.path.isdir(intent_model_dir) or not os.path.isdir(slot_model_dir):
+                raise RuntimeError(
+                    "Models not found.\n\n"
+                    "- For local dev: ensure 'xlm-roberta-intent-classifier-final/' and "
+                    "'slot_filling_model_crf/final_model/' exist next to app.py.\n"
+                    "- For Streamlit Cloud: upload models to Hugging Face Hub and set "
+                    "'models.intent_hf_repo' and 'models.slot_hf_repo' in Streamlit secrets "
+                    "or INTENT_MODEL_HF_REPO / SLOT_MODEL_HF_REPO env vars."
+                )
+
+            # Intent model + tokenizer from local disk
+            intent_tokenizer = AutoTokenizer.from_pretrained(intent_model_dir)
+            intent_model = AutoModelForSequenceClassification.from_pretrained(
+                intent_model_dir,
+                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+            ).to(device)
+            intent_model.eval()
+
+            with open(os.path.join(intent_model_dir, "id2intent.json"), "r") as f:
+                id2intent = json.load(f)
+
+            # Slot tokenizer + CRF model from local disk
+            slot_tokenizer = AutoTokenizer.from_pretrained(slot_model_dir)
+
+            with open(os.path.join(slot_model_dir, "id2label.json"), "r") as f:
+                id2slot = json.load(f)
+            with open(os.path.join(slot_model_dir, "label2id.json"), "r") as f:
+                slot2id = json.load(f)
+
+            slot_model = XLMRobertaWithCRF(
+                model_name="xlm-roberta-base",
+                num_labels=len(slot2id),
+                id2label=id2slot,
+                label2id=slot2id,
+            ).to(device)
+
+            model_state = load_file(os.path.join(slot_model_dir, "model.safetensors"))
+            slot_model.load_state_dict(model_state)
+            slot_model.eval()
+
     except Exception as e:
-        st.error(f"Error loading models: {str(e)}")
+        st.error(
+            "Error loading models.\n\n"
+            f"Details: {str(e)}\n\n"
+            "On Streamlit Cloud, make sure you have:\n"
+            "- Uploaded the models to Hugging Face Hub, and\n"
+            "- Set 'models.intent_hf_repo' and 'models.slot_hf_repo' in Streamlit secrets "
+            "or INTENT_MODEL_HF_REPO / SLOT_MODEL_HF_REPO env vars.\n"
+        )
         st.stop()
-    
+
     return {
-        'intent_tokenizer': intent_tokenizer,
-        'intent_model': intent_model,
-        'id2intent': id2intent,
-        'device': device,
-        'slot_tokenizer': slot_tokenizer,
-        'slot_model': slot_model,
-        'id2slot': id2slot
+        "intent_tokenizer": intent_tokenizer,
+        "intent_model": intent_model,
+        "id2intent": id2intent,
+        "device": device,
+        "slot_tokenizer": slot_tokenizer,
+        "slot_model": slot_model,
+        "id2slot": id2slot,
     }
 
 # Show loading indicator
