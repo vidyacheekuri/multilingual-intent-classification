@@ -2,6 +2,12 @@
 
 A comprehensive Natural Language Understanding (NLU) system that performs intent classification and slot filling across 51 languages using XLM-RoBERTa and CRF-based sequence labeling. This project includes both the trained models and an interactive web application for real-time inference.
 
+## 🚀 Live Demo
+
+**[Try the interactive web application →](YOUR_STREAMLIT_CLOUD_URL)**
+
+*Note: Replace `YOUR_STREAMLIT_CLOUD_URL` with your actual Streamlit Cloud URL after deployment*
+
 ## Project Overview
 
 This project implements a complete multilingual NLU pipeline that can:
@@ -149,63 +155,47 @@ slots = extract_slots("Play jazz music by Miles Davis")
 
 ## Deployment
 
-### Deploying to Railway
+### Deploying to Streamlit Cloud (Recommended)
 
-Railway is a modern platform for deploying applications. Here's how to deploy this Streamlit app:
+Streamlit Cloud is the easiest way to deploy this application publicly. Follow these steps:
 
-1. **Create a Railway Account**
-   - Go to https://railway.app
-   - Sign up with GitHub
+1. **Push your code to GitHub**
+   - Ensure your repository is public or you have Streamlit Cloud access
+   - Make sure `requirements.txt` is in the root directory
 
-2. **Create a New Project**
-   - Click "New Project"
-   - Select "Deploy from GitHub repo"
-   - Choose your repository
+2. **Deploy on Streamlit Cloud**
+   - Go to https://share.streamlit.io
+   - Sign in with your GitHub account
+   - Click "New app"
+   - Select your repository: `vidyacheekuri/multilingual-intent-classification`
+   - Set **Main file path**: `app.py`
+   - Click "Deploy"
 
-3. **Configure the Deployment**
-   - Railway will auto-detect it's a Python project
-   - Add the following environment variables if needed:
-     - `PYTHON_VERSION=3.10`
-     - `PORT=8501` (Streamlit default)
+3. **Configure Model Storage** (Required - models are too large for GitHub)
+   
+   Since the trained models are large, you need to host them externally. The recommended approach is to upload them to Hugging Face Hub:
+   
+   **Option A: Upload to Hugging Face Hub (Recommended)**
+   - See detailed instructions in `STREAMLIT_CLOUD_DEPLOY.md`
+   - Upload models to Hugging Face Hub
+   - Configure Streamlit Cloud secrets with your Hugging Face repo IDs:
+     ```toml
+     [models]
+     intent_hf_repo = "YOUR_USERNAME/xlm-roberta-intent-classifier"
+     slot_hf_repo = "YOUR_USERNAME/xlm-roberta-slot-filling-crf"
+     ```
+   - The app will automatically load models from Hugging Face Hub
+   
+   **Option B: Use other cloud storage**
+   - Store models in Google Drive, AWS S3, or similar
+   - Update `app.py` to download models on startup
+   - Configure access credentials via Streamlit Cloud secrets
 
-4. **Create railway.json (Optional)**
-   Create a `railway.json` file in the root:
-   ```json
-   {
-     "$schema": "https://railway.app/railway.schema.json",
-     "build": {
-       "builder": "NIXPACKS"
-     },
-     "deploy": {
-       "startCommand": "streamlit run app.py --server.port $PORT --server.address 0.0.0.0",
-       "restartPolicyType": "ON_FAILURE",
-       "restartPolicyMaxRetries": 10
-     }
-   }
-   ```
-
-5. **Create Procfile (Alternative)**
-   Create a `Procfile` in the root:
-   ```
-   web: streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
-   ```
-
-6. **Model Storage**
-   - For Railway deployment, you'll need to store models externally (e.g., Google Drive, AWS S3, Hugging Face Hub)
-   - Update `app.py` to download models from external storage on startup
-   - Or use Railway's persistent storage volumes
-
-7. **Deploy**
-   - Railway will automatically build and deploy
-   - Your app will be available at `https://YOUR_PROJECT.railway.app`
+4. **Access your app**
+   - Your app will be available at: `https://your-app-name.streamlit.app`
+   - Add this URL to the "Live Demo" section at the top of this README
 
 ### Deploying to Other Platforms
-
-**Streamlit Cloud**:
-1. Push code to GitHub
-2. Go to https://share.streamlit.io
-3. Connect your GitHub repo
-4. Deploy (note: model files need to be hosted separately)
 
 **Heroku**:
 1. Create `Procfile`: `web: streamlit run app.py --server.port=$PORT --server.address=0.0.0.0`
