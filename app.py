@@ -377,10 +377,10 @@ def load_models():
             slot_repo_dir = snapshot_download(repo_id=slot_hf_repo)
 
             # Intent model + tokenizer
-            intent_tokenizer = AutoTokenizer.from_pretrained(intent_repo_dir)
+            intent_tokenizer = AutoTokenizer.from_pretrained(intent_repo_dir, fix_mistral_regex=False)
             intent_model = AutoModelForSequenceClassification.from_pretrained(
                 intent_repo_dir,
-                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
             ).to(device)
             intent_model.eval()
 
@@ -389,7 +389,7 @@ def load_models():
                 id2intent = json.load(f)
 
             # Slot tokenizer + CRF model
-            slot_tokenizer = AutoTokenizer.from_pretrained(slot_repo_dir)
+            slot_tokenizer = AutoTokenizer.from_pretrained(slot_repo_dir, fix_mistral_regex=False)
 
             with open(os.path.join(slot_repo_dir, "id2label.json"), "r") as f:
                 id2slot = json.load(f)
@@ -423,10 +423,10 @@ def load_models():
                 )
 
             # Intent model + tokenizer from local disk
-            intent_tokenizer = AutoTokenizer.from_pretrained(intent_model_dir)
+            intent_tokenizer = AutoTokenizer.from_pretrained(intent_model_dir, fix_mistral_regex=False)
             intent_model = AutoModelForSequenceClassification.from_pretrained(
                 intent_model_dir,
-                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
             ).to(device)
             intent_model.eval()
 
@@ -434,7 +434,7 @@ def load_models():
                 id2intent = json.load(f)
 
             # Slot tokenizer + CRF model from local disk
-            slot_tokenizer = AutoTokenizer.from_pretrained(slot_model_dir)
+            slot_tokenizer = AutoTokenizer.from_pretrained(slot_model_dir, fix_mistral_regex=False)
 
             with open(os.path.join(slot_model_dir, "id2label.json"), "r") as f:
                 id2slot = json.load(f)
