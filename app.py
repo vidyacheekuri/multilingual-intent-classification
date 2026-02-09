@@ -6,6 +6,7 @@ from safetensors.torch import load_file
 from huggingface_hub import snapshot_download
 import json
 import os
+import traceback
 
 
 class SimpleCRF(nn.Module):
@@ -341,6 +342,14 @@ def _get_secret_or_env(section, key, env_var):
     return os.getenv(env_var)
 
 
+def _load_tokenizer(path_or_repo):
+    """Load tokenizer; use fix_mistral_regex=False if supported to avoid false-positive warning."""
+    try:
+        return AutoTokenizer.from_pretrained(path_or_repo, fix_mistral_regex=False)
+    except TypeError:
+        return AutoTokenizer.from_pretrained(path_or_repo)
+
+
 @st.cache_resource
 def load_models():
     """
@@ -377,10 +386,10 @@ def load_models():
             slot_repo_dir = snapshot_download(repo_id=slot_hf_repo)
 
             # Intent model + tokenizer
-            intent_tokenizer = AutoTokenizer.from_pretrained(intent_repo_dir, fix_mistral_regex=False)
+            intent_tokenizer = _load_tokenizer(intent_repo_dir)
             intent_model = AutoModelForSequenceClassification.from_pretrained(
                 intent_repo_dir,
-                dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
             ).to(device)
             intent_model.eval()
 
@@ -389,7 +398,7 @@ def load_models():
                 id2intent = json.load(f)
 
             # Slot tokenizer + CRF model
-            slot_tokenizer = AutoTokenizer.from_pretrained(slot_repo_dir, fix_mistral_regex=False)
+            slot_tokenizer = _load_tokenizer(slot_repo_dir)
 
             with open(os.path.join(slot_repo_dir, "id2label.json"), "r") as f:
                 id2slot = json.load(f)
@@ -423,10 +432,10 @@ def load_models():
                 )
 
             # Intent model + tokenizer from local disk
-            intent_tokenizer = AutoTokenizer.from_pretrained(intent_model_dir, fix_mistral_regex=False)
+            intent_tokenizer = _load_tokenizer(intent_model_dir)
             intent_model = AutoModelForSequenceClassification.from_pretrained(
                 intent_model_dir,
-                dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
             ).to(device)
             intent_model.eval()
 
@@ -434,7 +443,7 @@ def load_models():
                 id2intent = json.load(f)
 
             # Slot tokenizer + CRF model from local disk
-            slot_tokenizer = AutoTokenizer.from_pretrained(slot_model_dir, fix_mistral_regex=False)
+            slot_tokenizer = _load_tokenizer(slot_model_dir)
 
             with open(os.path.join(slot_model_dir, "id2label.json"), "r") as f:
                 id2slot = json.load(f)
@@ -453,13 +462,14 @@ def load_models():
             slot_model.eval()
 
     except Exception as e:
+        tb = traceback.format_exc()
         st.error(
             "Error loading models.\n\n"
-            f"Details: {str(e)}\n\n"
+            f"**Details:** {str(e)}\n\n"
+            "**Traceback:**\n```\n" + tb + "\n```\n\n"
             "On Streamlit Cloud, make sure you have:\n"
             "- Uploaded the models to Hugging Face Hub, and\n"
-            "- Set 'models.intent_hf_repo' and 'models.slot_hf_repo' in Streamlit secrets "
-            "or INTENT_MODEL_HF_REPO / SLOT_MODEL_HF_REPO env vars.\n"
+            "- Set 'models.intent_hf_repo' and 'models.slot_hf_repo' in Streamlit secrets."
         )
         st.stop()
 
