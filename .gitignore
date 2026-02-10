@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+venv/
+.venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data & models (large)
+data/
+splits/
+train/
+validation/
+test/
+tokenized_dataset/
+tokenized_ner_dataset/
+ner_dataset_plain/
+xlm-roberta-intent-classifier-final/
+slot_filling_model/
+slot_filling_model_crf/
+slot_filling_model_plaintext/
+results_intent_classification/
+visualizations/
+
+# Misc
+.DS_Store
+*.log
+*.jsonl
