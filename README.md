@@ -1,4 +1,4 @@
-# Multilingual Intent Detection & Slot Filling
+# Multilingual Intent Detection & Slot Filling + 
 
 NLU system for intent classification and slot filling across **51 languages** using XLM-RoBERTa and CRF-based sequence labeling (MASSIVE dataset). Includes a Streamlit app for real-time inference.
 
