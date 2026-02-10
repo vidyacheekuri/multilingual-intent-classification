@@ -1,4 +1,4 @@
-# Multilingual Intent Detection & Slot Filling
+# Multilingual Intent Detection & Slot Filling 
 
 A **Natural Language Understanding (NLU)** system that performs intent classification and slot filling in **51 languages**, built with XLM-RoBERTa and a CRF-based sequence labeler. Includes a Streamlit app for real-time inference.
 
@@ -66,10 +66,6 @@ Models run from local folders if present, or from Hugging Face when `INTENT_MODE
 - `NLP_IntentClassification.ipynb` — Intent model training
 - `NLP_SlotFilling_1st.ipynb` — Slot filling (CRF) training
 - Other notebooks — Evaluation and experiments
-
-## License
-
-For research and educational use.
 
 ## Acknowledgments
 
