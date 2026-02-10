@@ -101,13 +101,14 @@ st.markdown(
         color-scheme: light;
     }
     [data-testid="stAppViewContainer"] {
-        background: linear-gradient(135deg, rgba(46,110,223,0.09), rgba(134,231,214,0.18));
-        padding-top: 0.25rem;
-        padding-bottom: 0.25rem;
+        background: linear-gradient(160deg, #f0f4ff 0%, #e8f4f8 40%, #f5f9ff 100%);
+        padding-top: 0.5rem;
+        padding-bottom: 1.5rem;
     }
     .main .block-container {
-        padding-top: 1rem;
-        padding-bottom: 1rem;
+        padding-top: 1.5rem;
+        padding-bottom: 2.5rem;
+        max-width: 960px;
     }
     [data-testid="stVerticalBlock"] > [style*="flex-direction: column"] > [data-testid="stVerticalBlock"] {
         gap: 0.25rem;
@@ -122,8 +123,18 @@ st.markdown(
         margin-top: 0.25rem !important;
     }
     [data-testid="stSidebar"] {
-        background: #0b1f3a;
+        background: linear-gradient(180deg, #0f2847 0%, #0b1f3a 100%);
         color: #f7f9ff;
+        padding-bottom: 2rem !important;
+    }
+    [data-testid="stSidebar"] > [data-testid="stVerticalBlock"] {
+        padding-bottom: 1.5rem !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stMetric"] {
+        background: rgba(255,255,255,0.06);
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.08);
     }
     [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3,
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] span,
@@ -134,146 +145,139 @@ st.markdown(
         color: #f7f9ff !important;
     }
     [data-testid="stSidebar"] [data-testid="stMetricLabel"] {
-        color: rgba(247, 249, 255, 0.85) !important;
+        color: rgba(247, 249, 255, 0.88) !important;
     }
     [data-testid="stSidebar"] [data-testid="stMetricValue"] {
-        color: #f7f9ff !important;
+        color: #fff !important;
     }
     [data-testid="stSidebar"] ul, [data-testid="stSidebar"] li {
         color: #f7f9ff !important;
     }
     .hero-card {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(16px);
-        padding: 0.5rem 1rem;
-        border-radius: 12px;
-        border: 1px solid rgba(12, 63, 138, 0.08);
-        box-shadow: 0 15px 30px rgba(15, 55, 120, 0.1);
-        margin-bottom: 0.5rem;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(20px);
+        padding: 1.35rem 1.5rem;
+        border-radius: 18px;
+        border: 1px solid rgba(12, 63, 138, 0.06);
+        box-shadow: 0 4px 24px rgba(15, 55, 120, 0.08);
+        margin-bottom: 1.25rem;
     }
     .hero-card h1 {
-        font-size: 1.5rem;
-        margin-bottom: 0.15rem;
-        margin-top: 0.15rem;
+        font-size: 2.1rem;
+        margin-bottom: 0.35rem;
+        margin-top: 0.25rem;
         color: #0b1f3a;
+        font-weight: 700;
     }
     .hero-card p {
-        margin-bottom: 0.15rem;
-        margin-top: 0.15rem;
-        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+        margin-top: 0.25rem;
+        font-size: 1.05rem;
+        line-height: 1.55;
     }
     .hero-pill {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.25rem 0.75rem;
+        padding: 0.5rem 1rem;
         border-radius: 999px;
-        background: rgba(46,110,223,0.12);
+        background: linear-gradient(135deg, rgba(46,110,223,0.15), rgba(134,231,214,0.12));
         color: #0b1f3a;
         font-weight: 600;
-        letter-spacing: 0.01em;
-        font-size: 0.85rem;
-        margin-bottom: 0.25rem;
+        letter-spacing: 0.02em;
+        font-size: 0.95rem;
+        margin-bottom: 0.4rem;
     }
     .input-box {
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 12px;
-        padding: 0.5rem 0.75rem;
-        border: 1px solid rgba(12, 63, 138, 0.08);
-        box-shadow: 0 10px 20px rgba(15, 55, 120, 0.08);
-        margin-bottom: 0.25rem;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        border: 1px solid rgba(12, 63, 138, 0.06);
+        box-shadow: 0 2px 16px rgba(15, 55, 120, 0.06);
+        margin-bottom: 0.35rem;
+    }
+    [data-baseweb="textarea"] {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    [data-baseweb="textarea"] textarea {
+        border: 1px solid rgba(46,110,223,0.2) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04) !important;
+        font-size: 1.05rem !important;
+    }
+    div[data-baseweb="textarea"] {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    [data-baseweb="textarea"] textarea:focus {
+        border-color: rgba(46,110,223,0.5) !important;
+        box-shadow: 0 0 0 2px rgba(46,110,223,0.15) !important;
+        outline: none !important;
     }
     div.stButton>button {
-        border: 1px solid rgba(46,110,223,0.25);
-        border-radius: 999px;
-        background: rgba(255,255,255,0.85);
+        border: 1px solid rgba(46,110,223,0.3);
+        border-radius: 12px;
+        background: rgba(255,255,255,0.9);
         color: #0b1f3a;
-        padding: 0.25rem 0.6rem;
+        padding: 0.5rem 1rem;
         font-weight: 600;
-        font-size: 0.75rem;
+        font-size: 0.95rem;
         transition: all 0.2s ease;
-        box-shadow: none;
-        margin-bottom: 0.25rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     }
     div.stButton>button:hover {
-        background: rgba(46,110,223,0.1);
+        background: rgba(46,110,223,0.08);
         transform: translateY(-1px);
-        border-color: rgba(46,110,223,0.4);
+        border-color: rgba(46,110,223,0.45);
     }
     .result-card {
-        background: rgba(255, 255, 255, 0.92);
-        padding: 0.75rem 1rem;
-        border-radius: 14px;
-        border: 1px solid rgba(12, 63, 138, 0.08);
-        box-shadow: 0 15px 30px rgba(15, 55, 120, 0.08);
-        margin-bottom: 0.25rem;
-        margin-top: 0.25rem;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 1.35rem 1.5rem;
+        border-radius: 18px;
+        border: 1px solid rgba(12, 63, 138, 0.06);
+        box-shadow: 0 4px 20px rgba(15, 55, 120, 0.06);
+        margin-bottom: 0.75rem;
+        margin-top: 0.75rem;
     }
     .slot-tag {
         display: inline-flex;
         flex-direction: column;
-        gap: 0.2rem;
-        padding: 0.5rem 0.75rem;
-        border-radius: 10px;
-        background: rgba(46,110,223,0.1);
-        border: 1px solid rgba(46,110,223,0.18);
-        margin: 0.25rem 0.25rem 0 0;
-        min-width: 120px;
+        gap: 0.25rem;
+        padding: 0.65rem 1rem;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(46,110,223,0.08), rgba(134,231,214,0.06));
+        border: 1px solid rgba(46,110,223,0.15);
+        margin: 0.35rem 0.35rem 0 0;
+        min-width: 140px;
     }
     .slot-tag span {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: rgba(11,31,58,0.7);
+        letter-spacing: 0.05em;
+        color: rgba(11,31,58,0.65);
     }
     .slot-tag strong {
-        font-size: 1rem;
+        font-size: 1.1rem;
         color: #0b1f3a;
     }
     .footer-note {
-        color: rgba(11,31,58,0.65);
+        color: rgba(11,31,58,0.6);
         font-size: 0.75rem;
         text-align: center;
         margin-top: 0.5rem;
-        margin-bottom: 0.25rem;
     }
-    .stSubheader {
-        margin-bottom: 0.15rem;
-        margin-top: 0.15rem;
-    }
-    .stCaption {
-        margin-bottom: 0.15rem;
-        margin-top: 0.05rem;
-    }
-    [data-baseweb="textarea"] {
-        min-height: 100px;
-    }
-    label[for*="utterance"] {
-        font-weight: bold !important;
-    }
-    div[data-testid="stMetricLabel"] {
-        font-weight: bold !important;
-    }
-    textarea[data-baseweb="textarea"] {
-        font-weight: bold !important;
-    }
-    div[data-baseweb="textarea"] textarea {
-        font-weight: bold !important;
-    }
-    [data-baseweb="textarea"] textarea {
-        font-weight: bold !important;
-    }
-    div[data-testid="stTabs"] {
-        margin-top: 0.25rem;
-    }
-    [data-testid="stMetricValue"] {
-        font-size: 1.1rem !important;
-        font-weight: bold !important;
-    }
-    [data-testid="stMetricLabel"] {
-        font-size: 0.85rem !important;
-        font-weight: bold !important;
-    }
+    .stSubheader { margin-bottom: 0.15rem; margin-top: 0.15rem; }
+    .stCaption { margin-bottom: 0.15rem; margin-top: 0.05rem; }
+    [data-baseweb="textarea"] { min-height: 130px; }
+    label[for*="utterance"] { font-weight: 600 !important; font-size: 1.05rem !important; }
+    div[data-testid="stMetricLabel"] { font-weight: 600 !important; }
+    textarea[data-baseweb="textarea"], div[data-baseweb="textarea"] textarea,
+    [data-baseweb="textarea"] textarea { font-weight: 500 !important; }
+    div[data-testid="stTabs"] { margin-top: 0.25rem; }
+    [data-testid="stMetricValue"] { font-size: 1.4rem !important; font-weight: 700 !important; }
+    [data-testid="stMetricLabel"] { font-size: 0.95rem !important; font-weight: 600 !important; }
+    [data-testid="stMetric"] { font-size: 1rem !important; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -283,11 +287,11 @@ with st.container():
     st.markdown(
         """
         <div class="hero-card">
-            <div class="hero-pill"> Multilingual AI Assistant</div>
+            <div class="hero-pill">🌍 Multilingual AI Assistant</div>
             <h1>Intent Detection &amp; Slot Filling</h1>
-            <p style="max-width: 640px; color: rgba(11,31,58,0.75); font-size: 0.9rem; line-height: 1.4; margin: 0.25rem 0;">
-                Understand user utterances across 51 languages with a combined XLM-RoBERTa pipeline.
-                Powered by multilingual intent classification and CRF-enhanced slot extraction.
+            <p style="max-width: 640px; color: rgba(11,31,58,0.72); font-size: 1.05rem; line-height: 1.55; margin: 0.4rem 0 0 0;">
+                Understand user utterances across 51 languages with a combined XLM-RoBERTa pipeline—
+                intent classification and CRF-enhanced slot extraction.
             </p>
         </div>
         """,
@@ -379,8 +383,6 @@ def load_models():
     try:
         # Case 1: Load from Hugging Face Hub if repo IDs are configured
         if intent_hf_repo and slot_hf_repo:
-            st.info("Loading models from Hugging Face Hub (Streamlit Cloud configuration). This may take a minute on first load.")
-
             # Download full snapshots so we can also read metadata JSON files
             intent_repo_dir = snapshot_download(repo_id=intent_hf_repo)
             slot_repo_dir = snapshot_download(repo_id=slot_hf_repo)
