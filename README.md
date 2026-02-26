@@ -43,6 +43,16 @@ Training data comes from the **MASSIVE** dataset: parallel, multilingual intent-
 
 **[Try the app →](https://multilingual-intent-classification.streamlit.app)**
 
+### Demo Video
+
+<video src="NLP.mov" controls width="640"></video>
+
+### Screenshots
+
+| English | Japanese |
+|---------|----------|
+| ![Demo - English](test1.png) | ![Demo - Japanese](test2.png) |
+
 ## Features
 
 - **51 languages**, **60 intent classes**, **55 slot types** (BIO tagging)
