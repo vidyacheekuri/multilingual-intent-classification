@@ -41,9 +41,7 @@ Training data comes from the **MASSIVE** dataset: parallel, multilingual intent-
 
 ## Demo
 
-![Demo preview](NLP_demo.gif)
-
-**[📹 Watch full demo video](NLP.mp4)**
+![Demo video](NLP.mp4)
 
 ## Screenshots
 
