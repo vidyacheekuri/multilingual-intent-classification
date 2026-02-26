@@ -39,11 +39,7 @@ Training data comes from the **MASSIVE** dataset: parallel, multilingual intent-
 
 ---
 
-## Live Demo
-
-**[Try the app →](https://multilingual-intent-classification.streamlit.app)**
-
-### Demo Video
+## Demo
 
 <video src="NLP.mov" controls width="640"></video>
 
