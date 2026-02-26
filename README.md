@@ -49,9 +49,9 @@ Training data comes from the **MASSIVE** dataset: parallel, multilingual intent-
 
 ### Screenshots
 
-| English | Japanese |
-|---------|----------|
-| ![Demo - English](test1.png) | ![Demo - Japanese](test2.png) |
+| Demo 1 | Demo 2 |
+|--------|--------|
+| ![Demo screenshot](test1.png) | ![Demo screenshot](test2.png) |
 
 ## Features
 
