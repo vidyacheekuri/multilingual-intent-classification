@@ -41,7 +41,9 @@ Training data comes from the **MASSIVE** dataset: parallel, multilingual intent-
 
 ## Demo
 
-<video src="https://raw.githubusercontent.com/vidyacheekuri/multilingual-intent-classification/main/NLP.mp4" controls width="640"></video>
+![Demo preview](NLP_demo.gif)
+
+**[📹 Watch full demo video](NLP.mp4)**
 
 ## Screenshots
 
